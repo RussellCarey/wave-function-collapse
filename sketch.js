@@ -1,3 +1,5 @@
+// Follow along from codings trains video on Wave Function Collapse.
+
 const tiles = []
 
 let grid = []
@@ -10,33 +12,35 @@ const RIGHT = 2
 const DOWN = 3
 const LEFT = 4
 
-// 0 - 4 - 0: Blank, 1: RIGHT etc.
-// Controls what can connect to it (clockwise from the top)
 const rules = [
+  // BLANK - U, R, D, L
   [
     [BLANK, UP],
     [BLANK, RIGHT],
     [BLANK, DOWN],
     [BLANK, LEFT]
   ],
+  // UP - U, R, D, L
   [
     [RIGHT, LEFT, DOWN],
     [LEFT, UP, DOWN],
-    [BLANK, DOWN],
-    [RIGHT, UP, DOWN]
+    [BLANK, DOWN]
   ],
+  // RIGHT - U, R, D, L
   [
     [RIGHT, LEFT, DOWN],
     [LEFT, UP, DOWN],
     [RIGHT, LEFT, UP],
     [BLANK, LEFT]
   ],
+  //DOWN - U, R, D, L
   [
     [BLANK, UP],
     [LEFT, UP, DOWN],
     [RIGHT, LEFT, UP],
     [RIGHT, UP, DOWN]
   ],
+  //lEFT - U, R, D, L
   [
     [RIGHT, LEFT, DOWN],
     [BLANK, RIGHT],
@@ -46,11 +50,11 @@ const rules = [
 ]
 
 function preload () {
-  tiles[0] = loadImage('tiles/mountains/blank.png')
-  tiles[1] = loadImage('tiles/mountains/up.png')
-  tiles[2] = loadImage('tiles/mountains/right.png')
-  tiles[3] = loadImage('tiles/mountains/down.png')
-  tiles[4] = loadImage('tiles/mountains/left.png')
+  tiles[0] = loadImage('tiles/pipes/blank.png')
+  tiles[1] = loadImage('tiles/pipes/up.png')
+  tiles[2] = loadImage('tiles/pipes/right.png')
+  tiles[3] = loadImage('tiles/pipes/down.png')
+  tiles[4] = loadImage('tiles/pipes/left.png')
 }
 
 function setup () {
@@ -133,7 +137,6 @@ function draw () {
 
   // Remove the cell  at stop index
   if (stopIndex > 0) gridCopy.splice(stopIndex)
-  console.log(gridCopy)
   // Create a new cell
   const cell = random(gridCopy)
   cell.collapsed = true
@@ -152,12 +155,16 @@ function draw () {
         // If the cell has not collapsed
         let options = [BLANK, UP, RIGHT, DOWN, LEFT]
 
-        // Check the cell above and add all _____ into an array called valid options.
         if (j > 0) {
           let up = grid[i + (j - 1) * DIM]
           let validOptions = []
           for (let option of up.options) {
-            let valid = rules[option][2]
+            // Loops all options in the cell
+            // eg. 0, 1, 2
+            // Then grabs the 3rd value in each array and ads to total valid options.
+            // Check valid will check all the tile options and keeps only 'valid' ones.
+            // Splices the origin options..
+            let valid = rules[option][2] // Blank or down
             validOptions = validOptions.concat(valid)
           }
           checkValid(options, validOptions)
@@ -168,7 +175,7 @@ function draw () {
           let right = grid[i + 1 + j * DIM]
           let validOptions = []
           for (let option of right.options) {
-            let valid = rules[option][3]
+            let valid = rules[option][3] // Up, down or right
             validOptions = validOptions.concat(valid)
           }
           checkValid(options, validOptions)
@@ -179,7 +186,7 @@ function draw () {
           let down = grid[i + (j + 1) * DIM]
           let validOptions = []
           for (let option of down.options) {
-            let valid = rules[option][0]
+            let valid = rules[option][0] // Right, left or up
             validOptions = validOptions.concat(valid)
           }
           checkValid(options, validOptions)
@@ -190,7 +197,7 @@ function draw () {
           let left = grid[i - 1 + j * DIM]
           let validOptions = []
           for (let option of left.options) {
-            let valid = rules[option][1]
+            let valid = rules[option][1] //
             validOptions = validOptions.concat(valid)
           }
           checkValid(options, validOptions)
