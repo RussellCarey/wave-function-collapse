@@ -50,17 +50,17 @@ const rules = [
 ]
 
 function preload () {
-  tiles[0] = loadImage('tiles/pipes/blank.png')
-  tiles[1] = loadImage('tiles/pipes/up.png')
-  tiles[2] = loadImage('tiles/pipes/right.png')
-  tiles[3] = loadImage('tiles/pipes/down.png')
-  tiles[4] = loadImage('tiles/pipes/left.png')
+  tiles[0] = loadImage('tiles/polka/blank.png')
+  tiles[1] = loadImage('tiles/polka/up.png')
+  tiles[2] = loadImage('tiles/polka/right.png')
+  tiles[3] = loadImage('tiles/polka/down.png')
+  tiles[4] = loadImage('tiles/polka/left.png')
 }
 
 function setup () {
   createCanvas(800, 800)
   // Seed for the mapping
-  // randomSeed(3)
+  // randomSeed(10)
   for (let i = 0; i < DIM * DIM; i++) {
     grid[i] = {
       collapsed: false,
@@ -148,6 +148,7 @@ function draw () {
   for (let j = 0; j < DIM; j++) {
     for (let i = 0; i < DIM; i++) {
       let index = i + j * DIM
+
       // If the cell has collaposed add this to the next grid.
       if (grid[index].collapsed) {
         nextGrid[index] = grid[index]
@@ -186,7 +187,11 @@ function draw () {
           let down = grid[i + (j + 1) * DIM]
           let validOptions = []
           for (let option of down.options) {
-            let valid = rules[option][0] // Right, left or up
+            if (!(option in rules)) {
+              console.log(down)
+              console.log(i, j + 1)
+            }
+            let valid = rules[option][0]
             validOptions = validOptions.concat(valid)
           }
           checkValid(options, validOptions)
