@@ -10,6 +10,8 @@ const RIGHT = 2
 const DOWN = 3
 const LEFT = 4
 
+// 0 - 4 - 0: Blank, 1: RIGHT etc.
+// Controls what can connect to it (clockwise from the top)
 const rules = [
   [
     [BLANK, UP],
@@ -44,16 +46,17 @@ const rules = [
 ]
 
 function preload () {
-  tiles[0] = loadImage('tiles/pipes/blank.png')
-  tiles[1] = loadImage('tiles/pipes/up.png')
-  tiles[2] = loadImage('tiles/pipes/right.png')
-  tiles[3] = loadImage('tiles/pipes/down.png')
-  tiles[4] = loadImage('tiles/pipes/left.png')
+  tiles[0] = loadImage('tiles/mountains/blank.png')
+  tiles[1] = loadImage('tiles/mountains/up.png')
+  tiles[2] = loadImage('tiles/mountains/right.png')
+  tiles[3] = loadImage('tiles/mountains/down.png')
+  tiles[4] = loadImage('tiles/mountains/left.png')
 }
 
 function setup () {
   createCanvas(800, 800)
-  randomSeed(1)
+  // Seed for the mapping
+  // randomSeed(3)
   for (let i = 0; i < DIM * DIM; i++) {
     grid[i] = {
       collapsed: false,
@@ -68,8 +71,8 @@ function checkValid (arr, valid) {
     // ARR: [BLANK, UP, RIGHT, DOWN, LEFT]
     // result in removing UP, DOWN, LEFT
     let element = arr[i]
-    // console.log(element, valid.includes(element));
     if (!valid.includes(element)) {
+      // Remove from the array
       arr.splice(i, 1)
     }
   }
@@ -84,13 +87,17 @@ function draw () {
 
   const w = width / DIM
   const h = height / DIM
+  // Run through all squares
   for (let j = 0; j < DIM; j++) {
     for (let i = 0; i < DIM; i++) {
+      // Get current cell from 2D grid
       let cell = grid[i + j * DIM]
+      // If cell HAS collapsed - show a tile
       if (cell.collapsed) {
         let index = cell.options[0]
         image(tiles[index], i * w, j * h, w, h)
       } else {
+        // If it is not yet collapsed - show a blank square.
         fill(0)
         stroke(255)
         rect(i * w, j * h, w, h)
@@ -98,7 +105,7 @@ function draw () {
     }
   }
 
-  // Pick cell with least entropy
+  // Get all cells that have not collapsed
   let gridCopy = grid.slice()
   gridCopy = gridCopy.filter(a => !a.collapsed)
 
@@ -107,7 +114,7 @@ function draw () {
     return
   }
 
-  // Sort be entropy length
+  // Sort by how many options are left (entropy)
   gridCopy.sort((a, b) => {
     return a.options.length - b.options.length
   })
@@ -115,29 +122,37 @@ function draw () {
   //
   let len = gridCopy[0].options.length
   let stopIndex = 0
+  // Loop through all grid from 1
   for (let i = 1; i < gridCopy.length; i++) {
+    // If this cells options length is > grid[0] stop as we have found one with a higher entropy???
     if (gridCopy[i].options.length > len) {
       stopIndex = i
       break
     }
   }
 
+  // Remove the cell  at stop index
   if (stopIndex > 0) gridCopy.splice(stopIndex)
+  console.log(gridCopy)
+  // Create a new cell
   const cell = random(gridCopy)
   cell.collapsed = true
   const pick = random(cell.options)
   cell.options = [pick]
 
   const nextGrid = []
+  // Loop through grid
   for (let j = 0; j < DIM; j++) {
     for (let i = 0; i < DIM; i++) {
       let index = i + j * DIM
+      // If the cell has collaposed add this to the next grid.
       if (grid[index].collapsed) {
         nextGrid[index] = grid[index]
       } else {
+        // If the cell has not collapsed
         let options = [BLANK, UP, RIGHT, DOWN, LEFT]
 
-        // Look up
+        // Check the cell above and add all _____ into an array called valid options.
         if (j > 0) {
           let up = grid[i + (j - 1) * DIM]
           let validOptions = []
@@ -150,7 +165,6 @@ function draw () {
 
         // Look right
         if (i < DIM - 1) {
-          console.log(i, j)
           let right = grid[i + 1 + j * DIM]
           let validOptions = []
           for (let option of right.options) {
@@ -182,6 +196,8 @@ function draw () {
           checkValid(options, validOptions)
         }
 
+        // Add the new configued options for this tile into the array
+        // Set it to not be collapsed as we are no here yet, we just needed to edit its entripy.
         nextGrid[index] = {
           options,
           collapsed: false
@@ -190,5 +206,6 @@ function draw () {
     }
   }
 
+  // Run the next grid
   grid = nextGrid
 }
